@@ -46,6 +46,7 @@ function ClientDashboard({ open, clientName, clientEmail, onClose }) {
 
   return (
     <div className="client-dashboard">
+      
       {/* Portal header */}
       <header className="dashboard-header">
         <div className="dashboard-header-inner">

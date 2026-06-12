@@ -25,11 +25,13 @@ import { CTA } from '../components/CTA.jsx';
 import { Footer } from '../components/Footer.jsx';
 import { ConsultDrawer } from '../components/ConsultDrawer.jsx';
 import { ServicePanel } from '../components/ServicePanel.jsx';
+import { ClientLoginModal } from '../components/ClientLoginModal.jsx';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [consultOpen, setConsultOpen] = React.useState(false);
   const [activeService, setActiveService] = React.useState(null);
+  const [loginOpen, setLoginOpen] = React.useState(false);
 
   const openConsult = () => setConsultOpen(true);
   const closeConsult = () => setConsultOpen(false);
@@ -38,14 +40,14 @@ export default function HomePage() {
 
   React.useEffect(() => {
     const onConsult = () => openConsult();
-    const onLogin = () => navigate('/portal');
+    const onLogin = () => setLoginOpen(true);
     window.addEventListener('open-consult', onConsult);
     window.addEventListener('open-client-login', onLogin);
     return () => {
       window.removeEventListener('open-consult', onConsult);
       window.removeEventListener('open-client-login', onLogin);
     };
-  }, [navigate]);
+  }, []);
 
   return (
     <React.Fragment>
@@ -74,6 +76,11 @@ export default function HomePage() {
       <Footer />
       <ConsultDrawer open={consultOpen} onClose={closeConsult} />
       <ServicePanel service={activeService} onClose={closeService} onConsultClick={openConsult} />
+      <ClientLoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSignedIn={() => { setLoginOpen(false); navigate('/portal'); }}
+      />
     </React.Fragment>
   );
 }

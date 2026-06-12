@@ -1,8 +1,7 @@
 import React from 'react';
-import { Footer } from './Footer.jsx';
-import { Header } from './Header.jsx';
 import { Icon } from './Icon.jsx';
 import { IMG } from '../images.js';
+import { login, signup } from '../api/auth.js';
 
 function ClientLoginModal({ open, onClose, onSignedIn }) {
   const [mode, setMode] = React.useState("login"); // "login" | "signup"
@@ -14,14 +13,21 @@ function ClientLoginModal({ open, onClose, onSignedIn }) {
     service: "US Expat Returns",
   });
   const [submitted, setSubmitted] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   React.useEffect(() => {
     if (open) {
       setMode("login");
       setSubmitted(false);
+      setBusy(false);
+      setError("");
       setForm({ email: "", phone: "", clientId: "", password: "", service: "US Expat Returns" });
     }
   }, [open]);
+
+  // Clear any error when switching between sign in / sign up.
+  React.useEffect(() => { setError(""); }, [mode]);
 
   React.useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -29,16 +35,28 @@ function ClientLoginModal({ open, onClose, onSignedIn }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    // After short success-pause, sign in to the dashboard
-    setTimeout(() => {
-      if (onSignedIn) onSignedIn({
-        name: form.email ? form.email.split("@")[0].replace(/[._]/g, " ") : "Client",
-        email: form.email || "you@example.com",
-      });
-    }, 1100);
+    setError("");
+    setBusy(true);
+    try {
+      const user = mode === "login"
+        ? await login({ email: form.email, password: form.password })
+        : await signup({
+            email: form.email,
+            password: form.password,
+            phone: form.phone,
+            service: form.service,
+            clientId: form.clientId,
+          });
+      setSubmitted(true);
+      // Brief success-pause, then hand the authenticated user up to the app.
+      setTimeout(() => { if (onSignedIn) onSignedIn(user); }, 900);
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const SERVICES = [
@@ -278,9 +296,27 @@ function ClientLoginModal({ open, onClose, onSignedIn }) {
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary" style={{ marginTop: "var(--space-3)", width: "100%", justifyContent: "center" }}>
-                {mode === "login" ? "Sign in to portal" : "Create account"}
-                <Icon name="arrow-right" size={16} />
+              {error && (
+                <div role="alert" style={{
+                  display: "flex", alignItems: "flex-start", gap: 8,
+                  background: "rgba(180,35,35,0.07)",
+                  border: "1px solid rgba(180,35,35,0.25)",
+                  color: "#9a2020",
+                  borderRadius: 8,
+                  padding: "10px 12px",
+                  fontSize: 13,
+                  lineHeight: 1.45,
+                }}>
+                  <span style={{ flexShrink: 0, marginTop: 1 }}><Icon name="alert-circle" size={15} /></span>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary" disabled={busy} style={{ marginTop: "var(--space-3)", width: "100%", justifyContent: "center", opacity: busy ? 0.7 : 1, cursor: busy ? "wait" : "pointer" }}>
+                {busy
+                  ? (mode === "login" ? "Signing in…" : "Creating account…")
+                  : (mode === "login" ? "Sign in to portal" : "Create account")}
+                {!busy && <Icon name="arrow-right" size={16} />}
               </button>
 
               <p style={{ fontSize: 12, color: "var(--ink-3)", textAlign: "center", margin: "12px 0 0", lineHeight: 1.5 }}>

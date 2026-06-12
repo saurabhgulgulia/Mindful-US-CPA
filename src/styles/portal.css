@@ -1,0 +1,10 @@
+/* Scoped: on /portal the dashboard is the whole page, not a fixed overlay.
+   Scoped to .portal-page so the homepage overlay behaviour is unaffected. */
+.portal-page { background: var(--cream); min-height: 100vh; }
+.portal-page .client-dashboard {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  overflow-y: visible !important;
+  min-height: 100vh;
+}

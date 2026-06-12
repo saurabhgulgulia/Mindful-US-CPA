@@ -1,36 +1,19 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage.jsx';
+import PortalPage from './pages/PortalPage.jsx';
 
-// Design tokens + component styles (order matters: tokens first)
-import './colors_and_type.css';
-import './site.css';
+import './styles/colors_and_type.css';
+import './styles/site.css';
 
-// images.js assigns window.IMG (used by <img src={window.IMG[...]} /> across components)
-import './images.js';
-
-import { ClientDashboard } from './ClientDashboard.jsx';
-
-// Boots straight into the client portal dashboard — this mirrors the original
-// client-portal.html preview. To render the full marketing site instead, swap
-// the import to `import App from './App.jsx'` and render <App /> below.
-function PortalPreview() {
-  const [open, setOpen] = React.useState(true);
-  return (
-    <ClientDashboard
-      open={open}
-      clientName="Avery Whitfield"
-      clientEmail="avery@example.com"
-      onClose={() => {
-        // In the standalone preview, "sign out" just resets so you can re-enter.
-        setOpen(false);
-        setTimeout(() => setOpen(true), 50);
-      }}
-    />
-  );
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <PortalPreview />
+    <BrowserRouter>
+      <Routes>
+        <Route path="Mindful-US-CPA/" element={<HomePage />} />
+        <Route path="Mindful-US-CPA/portal/" element={<PortalPage />} />
+      </Routes>
+    </BrowserRouter>
   </React.StrictMode>
 );
